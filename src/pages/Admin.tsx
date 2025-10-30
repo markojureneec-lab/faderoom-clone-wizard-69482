@@ -9,67 +9,54 @@ import ReservationsTab from "@/components/admin/ReservationsTab";
 import WorkingHoursTab from "@/components/admin/WorkingHoursTab";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import { LogOut, Calendar, Clock, BarChart3 } from "lucide-react";
-
 const Admin = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-
   useEffect(() => {
     checkAdminAccess();
   }, []);
-
   const checkAdminAccess = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    
+    const {
+      data: {
+        session
+      }
+    } = await supabase.auth.getSession();
     if (!session) {
       toast.error("Morate biti prijavljeni");
       navigate("/auth");
       return;
     }
-
-    const { data: userRole } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", session.user.id)
-      .eq("role", "admin")
-      .single();
-
+    const {
+      data: userRole
+    } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id).eq("role", "admin").single();
     if (!userRole) {
       toast.error("Nemate administratorske privilegije");
       navigate("/");
       return;
     }
-
     setIsAdmin(true);
     setLoading(false);
   };
-
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast.success("Uspješna odjava");
     navigate("/");
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">Učitavanje...</p>
-      </div>
-    );
+      </div>;
   }
-
   if (!isAdmin) {
     return null;
   }
-
-  return (
-    <div className="min-h-screen py-8 px-4">
+  return <div className="min-h-screen py-8 px-4">
       <div className="container mx-auto max-w-7xl">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gradient mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">The Fade Room</p>
+            <h1 className="text-4xl font-bold text-gradient mb-2">Nadzorna ploča</h1>
+            <p className="text-muted-foreground">The Lock Room</p>
           </div>
           <div className="flex gap-4">
             <Button variant="outline" onClick={() => navigate("/")}>
@@ -113,8 +100,6 @@ const Admin = () => {
           </Tabs>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Admin;
