@@ -8,6 +8,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,12 +19,31 @@ const Navigation = () => {
   }, []);
 
   useEffect(() => {
+    const checkAdmin = async (userId: string) => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .maybeSingle();
+      
+      setIsAdmin(!!data);
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user);
+      if (session?.user) {
+        checkAdmin(session.user.id);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user);
+      if (session?.user) {
+        checkAdmin(session.user.id);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -68,6 +88,16 @@ const Navigation = () => {
                 <User size={16} />
                 <span className="text-muted-foreground">{user.email}</span>
               </div>
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/admin")}
+                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                >
+                  Admin
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
