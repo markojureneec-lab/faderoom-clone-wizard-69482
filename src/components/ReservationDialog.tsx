@@ -71,12 +71,14 @@ const ReservationDialog = ({ open, onOpenChange, serviceName, serviceDuration = 
     }
 
     if (!workingHours) {
+      console.log("No working hours found for day:", dayOfWeek);
       setIsClosedDay(true);
       setSlotsLoading(false);
       return;
     }
 
     if (workingHours.is_closed) {
+      console.log("Working hours marked as closed for day:", dayOfWeek);
       setIsClosedDay(true);
       setSlotsLoading(false);
       return;
@@ -86,7 +88,7 @@ const ReservationDialog = ({ open, onOpenChange, serviceName, serviceDuration = 
       .from("reservations")
       .select("reservation_time")
       .eq("reservation_date", format(selectedDate, "yyyy-MM-dd"))
-      .eq("status", "confirmed");
+      .in("status", ["pending", "confirmed"]);
 
     if (reservationsError) {
       console.error("Error loading reservations:", reservationsError);
