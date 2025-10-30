@@ -11,7 +11,7 @@ import { z } from "zod";
 
 const signUpSchema = z.object({
   fullName: z.string().trim().min(2, "Ime mora imati najmanje 2 znaka").max(100),
-  phoneNumber: z.string().trim().min(8, "Unesite valjan broj telefona").max(20),
+  phoneNumber: z.string().trim().min(8, "Broj telefona je obavezan i mora imati najmanje 8 znakova").max(20),
   email: z.string().trim().email("Unesite valjanu email adresu").max(255),
   password: z.string().min(6, "Lozinka mora imati najmanje 6 znakova").max(100),
 });
@@ -53,12 +53,13 @@ const Auth = () => {
 
           sessionStorage.removeItem("pendingReservation");
           toast.success("Rezervacija uspješno kreirana!");
-          navigate("/");
         } catch (error: any) {
           toast.error(error.message || "Greška pri kreiranju rezervacije");
           sessionStorage.removeItem("pendingReservation");
         }
       }
+      // Always redirect to home after login
+      navigate("/");
     };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
