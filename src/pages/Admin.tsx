@@ -8,11 +8,13 @@ import { toast } from "sonner";
 import ReservationsTab from "@/components/admin/ReservationsTab";
 import WorkingHoursTab from "@/components/admin/WorkingHoursTab";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
-import { LogOut, Calendar, Clock, BarChart3 } from "lucide-react";
+import AdminReservationDialog from "@/components/AdminReservationDialog";
+import { LogOut, Calendar, Clock, BarChart3, Plus } from "lucide-react";
 const Admin = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showAddReservation, setShowAddReservation] = useState(false);
   useEffect(() => {
     checkAdminAccess();
   }, []);
@@ -59,6 +61,10 @@ const Admin = () => {
             <p className="text-muted-foreground">The Lock Room</p>
           </div>
           <div className="flex gap-4">
+            <Button onClick={() => setShowAddReservation(true)} className="gap-2">
+              <Plus size={16} />
+              Dodaj rezervaciju
+            </Button>
             <Button variant="outline" onClick={() => navigate("/")}>
               Početna
             </Button>
@@ -68,6 +74,11 @@ const Admin = () => {
             </Button>
           </div>
         </div>
+
+        <AdminReservationDialog 
+          open={showAddReservation} 
+          onOpenChange={setShowAddReservation}
+        />
 
         <Card className="p-6">
           <Tabs defaultValue="analytics">
