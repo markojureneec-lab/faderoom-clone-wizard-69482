@@ -5,10 +5,12 @@ import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { hr } from "date-fns/locale";
+import { serviceData } from "@/data/services";
 
 interface TimeSlot {
   time: string;
@@ -27,6 +29,7 @@ const AdminReservationDialog = ({ open, onOpenChange }: AdminReservationDialogPr
   const [customerPhone, setCustomerPhone] = useState("");
   const [serviceName, setServiceName] = useState("");
   const [servicePrice, setServicePrice] = useState("");
+  const [isCustomService, setIsCustomService] = useState(false);
   const [notes, setNotes] = useState("");
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
@@ -135,6 +138,7 @@ const AdminReservationDialog = ({ open, onOpenChange }: AdminReservationDialogPr
       setCustomerPhone("");
       setServiceName("");
       setServicePrice("");
+      setIsCustomService(false);
       setNotes("");
     } catch (error: any) {
       toast.error(error.message || "Greška pri kreiranju rezervacije");
@@ -185,13 +189,53 @@ const AdminReservationDialog = ({ open, onOpenChange }: AdminReservationDialogPr
               <Label htmlFor="serviceName" className="text-base">
                 Usluga (opcionalno)
               </Label>
-              <Input
-                id="serviceName"
-                value={serviceName}
-                onChange={(e) => setServiceName(e.target.value)}
-                placeholder="Naziv usluge..."
-                className="mt-2"
-              />
+              <Select
+                value={isCustomService ? "custom" : serviceName}
+                onValueChange={(value) => {
+                  if (value === "custom") {
+                    setIsCustomService(true);
+                    setServiceName("");
+                    setServicePrice("");
+                  } else {
+                    setIsCustomService(false);
+                    setServiceName(value);
+                    const service = serviceData
+                      .flatMap(cat => cat.services)
+                      .find(s => s.name === value);
+                    if (service) {
+                      setServicePrice(service.price.toString());
+                    }
+                  }
+                }}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue placeholder="Odaberite uslugu" />
+                </SelectTrigger>
+                <SelectContent>
+                  {serviceData.map((category) => (
+                    <div key={category.title}>
+                      <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
+                        {category.title}
+                      </div>
+                      {category.services.map((service) => (
+                        <SelectItem key={service.name} value={service.name}>
+                          {service.name} - €{service.price}
+                        </SelectItem>
+                      ))}
+                    </div>
+                  ))}
+                  <SelectItem value="custom">Prilagođeno</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {isCustomService && (
+                <Input
+                  placeholder="Unesite naziv usluge"
+                  value={serviceName}
+                  onChange={(e) => setServiceName(e.target.value)}
+                  className="mt-2"
+                />
+              )}
             </div>
 
             <div>
@@ -205,6 +249,7 @@ const AdminReservationDialog = ({ open, onOpenChange }: AdminReservationDialogPr
                 onChange={(e) => setServicePrice(e.target.value)}
                 placeholder="0.00"
                 className="mt-2"
+                disabled={!isCustomService && serviceName !== ""}
               />
             </div>
           </div>

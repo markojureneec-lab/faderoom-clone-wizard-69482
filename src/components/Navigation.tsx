@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { User, LogOut } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { User, LogOut, Menu } from "lucide-react";
 import { toast } from "sonner";
 const Navigation = () => {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,6 +55,7 @@ const Navigation = () => {
     element?.scrollIntoView({
       behavior: "smooth"
     });
+    setIsMobileMenuOpen(false);
   };
 
   const handleSignOut = async () => {
@@ -117,6 +120,84 @@ const Navigation = () => {
               Prijava
             </Button>
           )}
+        </div>
+
+        {/* Mobile menu */}
+        <div className="md:hidden">
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <div className="flex flex-col gap-6 mt-8">
+                <button onClick={() => scrollToSection("hero")} className="text-lg hover:text-primary transition-smooth text-left">
+                  Početna
+                </button>
+                <button onClick={() => scrollToSection("usluge")} className="text-lg hover:text-primary transition-smooth text-left">
+                  Usluge
+                </button>
+                <button onClick={() => scrollToSection("zaposlenici")} className="text-lg hover:text-primary transition-smooth text-left">
+                  Zaposlenici
+                </button>
+                <button onClick={() => scrollToSection("prostor")} className="text-lg hover:text-primary transition-smooth text-left">
+                  Naš prostor
+                </button>
+                <button onClick={() => scrollToSection("lokacija")} className="text-lg hover:text-primary transition-smooth text-left">
+                  Pronađite nas
+                </button>
+                <button onClick={() => scrollToSection("kontakt")} className="text-lg hover:text-primary transition-smooth text-left">
+                  Kontakt
+                </button>
+                
+                <div className="border-t pt-6 space-y-4">
+                  {user ? (
+                    <>
+                      <div className="flex items-center gap-2 text-sm">
+                        <User size={16} />
+                        <span className="text-muted-foreground">{user.email}</span>
+                      </div>
+                      {isAdmin && (
+                        <Button
+                          variant="outline"
+                          className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                          onClick={() => {
+                            navigate("/admin");
+                            setIsMobileMenuOpen(false);
+                          }}
+                        >
+                          Admin
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                        onClick={() => {
+                          handleSignOut();
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <LogOut size={16} className="mr-2" />
+                        Odjava
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                      onClick={() => {
+                        navigate("/auth");
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      Prijava
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </nav>;
